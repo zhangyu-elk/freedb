@@ -51,6 +51,7 @@ db_engine_t* db_engine_open(const char *root) {
     EXIT:
     C_CLOSE(txn, mdb_txn_abort);
     C_CLOSE(env, mdb_env_close);
+    return NULL;
 }
 
 int db_engine_put(db_engine_t *engine, const void *key, const uint32_t lkey, const void *value, const uint32_t lvalue) {
@@ -62,9 +63,9 @@ int db_engine_put(db_engine_t *engine, const void *key, const uint32_t lkey, con
     MDB_val dbkey, dbvalue;
 
     dbkey.mv_size = lkey;
-    dbkey.mv_data = key;
+    dbkey.mv_data = (void *)key;
     dbvalue.mv_size = lvalue;
-    dbvalue.mv_data = value;
+    dbvalue.mv_data = (void *)value;
 
     MDBE(mdb_put(txn, engine->dbi, &dbkey, &dbvalue, 0));
     MDBE(mdb_txn_commit(txn));
@@ -85,7 +86,7 @@ int db_engine_get(db_engine_t *engine, const void *key, const uint32_t lkey, voi
     MDB_val dbkey, dbvalue;
 
     dbkey.mv_size = lkey;
-    dbkey.mv_data = key;
+    dbkey.mv_data = (void *)key;
 
     MDBE(mdb_get(txn, engine->dbi, &dbkey, &dbvalue));
 
@@ -107,7 +108,7 @@ int db_engine_remove(db_engine_t *engine, const void *key, const uint32_t lkey) 
     MDB_val dbkey, dbvalue;
 
     dbkey.mv_size = lkey;
-    dbkey.mv_data = key;
+    dbkey.mv_data = (void *)key;
 
     MDBE(mdb_del(txn, engine->dbi, &dbkey, NULL));
 

@@ -8,7 +8,8 @@ include_directories(${LMDB_H})
 set(LMDB_LIB /usr/local/lib/)
 link_directories(${LMDB_LIB})
 
-aux_source_directory(src SRC_LIST)
+file(GLOB SRC_LIST "src/*.c" "bees/*.c")
+
 link_libraries(lmdb)
 
 add_executable(freedb main.c ${SRC_LIST})

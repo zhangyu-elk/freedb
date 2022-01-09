@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include "error.h"
 
 void* zcalloc(size_t size) {
     void *buf = malloc(size);
@@ -13,5 +14,11 @@ void* zcalloc(size_t size) {
         return buf;
     }
     //后续如果后续要可能需要封装成宏定义，否则无法打印出行好
-    printf("out of memory, malloc [%ld] fail\n", size);
+    DIE("out of memory, malloc [%ld] fail\n", size);
+}
+
+void zfree(void *buf) {
+    if (buf) {
+        free(buf);
+    }
 }
