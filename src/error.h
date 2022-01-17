@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 enum {
+    DB_ERR = -1,
     DB_OK
 };
 

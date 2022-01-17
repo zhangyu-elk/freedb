@@ -6,7 +6,7 @@
 #include "driver.h"
 #include "kqueue.ch"
 
-driver_t *driver_new(size_t size) {
+driver_t *driverNew(size_t size) {
     driver_t *driver = zcalloc(sizeof(driver_t));
     evApi *api = evApiCreate(size);
     if (!api) {
@@ -20,28 +20,24 @@ driver_t *driver_new(size_t size) {
     return driver;
 }
 
-static int driver_process_events(driver_t *driver) {
-    if (driver->reg_ev_size <= 0) {
-        return 0;
-    }
-
+static int driverProcessEvents(driver_t *driver) {
     firedEv *fired = driver->fired;
     int nevents = evApiPool(driver->api, NULL, fired);
     for (int i = 0; i < nevents; i++) {
         ioEvent *event = &driver->events[fired->fd];
 
-        if (fired->mask & EV_IO_READABLE && event->rproc) {
+        if (fired->mask & event->mask & EV_IO_READABLE && event->rproc) {
             event->rproc(driver, fired->fd, event->data, fired->mask);
         }
-        if (fired->mask & EV_IO_WRITEABLE && event->wproc) {
+        if (fired->mask & event->mask & EV_IO_WRITEABLE && event->wproc) {
             event->wproc(driver, fired->fd, event->data, fired->mask);
         }
     }
     return nevents;
 }
 
-int driver_register_ioevent(driver_t *driver, int fd, int mask,
-                            ioProc_f *proc, void *data) {
+int driverRegEvent(driver_t *driver, int fd, int mask,
+                   ioProc_f *proc, void *data) {
 
     if (fd >= driver->size) {
         return -1;
@@ -54,25 +50,22 @@ int driver_register_ioevent(driver_t *driver, int fd, int mask,
     if (mask & EV_IO_WRITEABLE) ev->wproc = proc;
     if (mask & EV_IO_READABLE) ev->rproc = proc;
     ev->data = data;
-
-    driver->reg_ev_size++;
     return 0;
 }
 
-void driver_delete_ioevent(driver_t *driver, int fd, int mask) {
+void driverDelEvent(driver_t *driver, int fd, int mask) {
     if (fd >= driver->size) return;
     ioEvent *ev = &driver->events[fd];
     if (ev->mask == EV_IO_NONE) return;
 
-    driver->reg_ev_size--;
     evApiDelEvent(driver->api, fd, mask);
     ev->mask = ev->mask & (~mask);
 }
 
 //预先将listen的句柄注册进来，再启动
-void driver_run(driver_t *driver) {
+void driverRun(driver_t *driver) {
     while (!driver->stop) {
-        driver_process_events(driver);
+        driverProcessEvents(driver);
     }
 }
 

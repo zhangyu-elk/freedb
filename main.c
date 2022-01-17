@@ -2,11 +2,6 @@
 #include "src/server.h"
 
 int main() {
-    server_t  *server = server_new("");
-    if (server == NULL) {
-        return -1;
-    }
-    server_run(server);
-    server_close(server);
+    serverMain();
     return 0;
 }

@@ -47,11 +47,11 @@ static int evApiAddEvent(evApi_t *api, int fd, int mask) {
     struct kevent ke;
 
     if (mask & EV_IO_READABLE) {
-        EV_SET(&ke, fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
+        EV_SET(&ke, fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
         if (kevent(api->kqfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
     }
     if (mask & EV_IO_WRITEABLE) {
-        EV_SET(&ke, fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
+        EV_SET(&ke, fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
         if (kevent(api->kqfd, &ke, 1, NULL, 0, NULL) == -1) return -1;
     }
     return 0;

@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <memory.h>
-#include "db_engine.h"
+#include "dbEngine.h"
 #include "error.h"
 #include "zmalloc.h"
 
@@ -23,7 +23,7 @@
     }                           \
 }while(0)
 
-db_engine_t* db_engine_open(const char *root) {
+dbEngine* dbEngineOpen(const char *root) {
     if (root == NULL) {
         return NULL;
     }
@@ -43,7 +43,7 @@ db_engine_t* db_engine_open(const char *root) {
     MDBE(mdb_dbi_open(txn, "db1", MDB_CREATE, &dbi));
     MDBE(mdb_txn_commit(txn));
 
-    db_engine_t *engine = zcalloc(sizeof(engine));
+    dbEngine *engine = zcalloc(sizeof(engine));
     engine->env = env;
     engine->dbi = dbi;
     return engine;
@@ -54,9 +54,7 @@ db_engine_t* db_engine_open(const char *root) {
     return NULL;
 }
 
-int db_engine_put(db_engine_t *engine, const void *key, const uint32_t lkey, const void *value, const uint32_t lvalue) {
-    int ret = DB_OK;
-
+int dbEngineSet(dbEngine *engine, const void *key, size_t lkey, const void *value, size_t lvalue) {
     MDB_txn *txn = NULL;
     MDBE(mdb_txn_begin(engine->env, NULL, 0, &txn));
 
@@ -70,16 +68,14 @@ int db_engine_put(db_engine_t *engine, const void *key, const uint32_t lkey, con
     MDBE(mdb_put(txn, engine->dbi, &dbkey, &dbvalue, 0));
     MDBE(mdb_txn_commit(txn));
 
-    return ret;
+    return DB_OK;
 
     EXIT:
     C_CLOSE(txn, mdb_txn_abort);
-    return ret;
+    return DB_ERR;
 }
 
-int db_engine_get(db_engine_t *engine, const void *key, const uint32_t lkey, void **value, uint32_t *lvalue) {
-    int ret = DB_OK;
-
+int dbEngineGet(dbEngine *engine, const void *key, size_t lkey, void **value, size_t *lvalue) {
     MDB_txn *txn = NULL;
     MDBE(mdb_txn_begin(engine->env, NULL, 0, &txn));
 
@@ -94,12 +90,14 @@ int db_engine_get(db_engine_t *engine, const void *key, const uint32_t lkey, voi
     *value = zcalloc(dbvalue.mv_size);
     memcpy(*value, dbvalue.mv_data, dbvalue.mv_size);
 
+    return DB_OK;
+
     EXIT:
     C_CLOSE(txn, mdb_txn_abort);
-    return ret;
+    return DB_ERR;
 }
 
-int db_engine_remove(db_engine_t *engine, const void *key, const uint32_t lkey) {
+int dbEngineRemove(dbEngine *engine, const void *key, size_t lkey) {
     int ret = DB_OK;
 
     MDB_txn *txn = NULL;
@@ -117,7 +115,7 @@ int db_engine_remove(db_engine_t *engine, const void *key, const uint32_t lkey) 
     return ret;
 }
 
-int db_engine_drop(db_engine_t *engine) {
+int db_engine_drop(dbEngine *engine) {
     MDB_txn *txn = NULL;
     MDBE(mdb_txn_begin(engine->env, NULL, 0, &txn));
     MDBE(mdb_drop(txn, engine->dbi, 0));
@@ -131,7 +129,7 @@ int db_engine_drop(db_engine_t *engine) {
     return DB_OK;
 }
 
-void db_engine_close(db_engine_t *engine) {
+void db_engine_close(dbEngine *engine) {
     mdb_dbi_close(engine->env, engine->dbi);
     C_CLOSE(engine->env, mdb_env_close);
 }

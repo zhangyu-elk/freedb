@@ -6,12 +6,14 @@
 #include "../cutest/CuTest.h"
 
 CuSuite* db_engine_open_suite();
+CuSuite* respMarshalSuite();
 
 void RunAllTests(void) {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
 
     CuSuiteAddSuite(suite, db_engine_open_suite());
+    CuSuiteAddSuite(suite, respMarshalSuite());
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);

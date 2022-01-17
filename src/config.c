@@ -6,8 +6,6 @@
 
 static config_t default_config = {
         9000,
-        9001,
-        9002,
 };
 
 config_t *load_config(const char* path) {

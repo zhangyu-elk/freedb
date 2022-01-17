@@ -27,6 +27,10 @@ int zlisten(short port) {
         return -1;
     }
 
+    //设置reuse
+    int one;
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+
     int bind_result = bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (bind_result == -1) {
         return -1;
@@ -36,14 +40,14 @@ int zlisten(short port) {
         return -1;
     }
 
-    if (set_nonblock(server_socket) == -1) {
+    if (fdSetNonBlocking(server_socket) == -1) {
         return -1;
     }
 
     return server_socket;
 }
 
-int set_nonblock(int fd) {
+int fdSetNonBlocking(int fd) {
     int val;
     if ((val = fcntl(fd, F_GETFL, 0)) < 0) {
         return -1;
@@ -56,10 +60,10 @@ int set_nonblock(int fd) {
     return 0;
 }
 
-//判断网络错误是否致命
-int net_fatal() {
+//网络操作是否可以继续
+int netErrorAgain() {
     if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) {
-        return 0;
+        return 1;
     }
-    return 1;
+    return 0;
 }

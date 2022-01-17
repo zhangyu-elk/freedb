@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../cutest/CuTest.h"
-#include "../src/db_engine.h"
+#include "../src/dbEngine.h"
 #include "../src/error.h"
 
 //lmdb是内嵌数据库所以不打桩，直接测
 void test_db_engine_open(CuTest *tc) {
-    db_engine_t *engine = db_engine_open("./");
+    dbEngine *engine = dbEngineOpen("./");
     CuAssertPtrNotNull(tc, engine);
 
     int ret = db_engine_drop(engine);
@@ -21,23 +21,23 @@ void test_db_engine_open(CuTest *tc) {
 
 //测试写入、查询、删除
 void test_db_engine_put(CuTest *tc) {
-    db_engine_t *engine = db_engine_open("./");
+    dbEngine *engine = dbEngineOpen("./");
     CuAssertPtrNotNull(tc, engine);
 
     char *key = {"key"};
     char *value = {"value"};
 
-    int ret = db_engine_put(engine, key, strlen(key), value, strlen(value));
+    int ret = dbEngineSet(engine, key, strlen(key), value, strlen(value));
     CuAssertIntEquals(tc, ret, DB_OK);
 
     char *rvalue = NULL;
     uint32_t rlvalue = 0;
-    ret = db_engine_get(engine, key, strlen(key), (void**)&rvalue, &rlvalue);
+    ret = dbEngineGet(engine, key, strlen(key), (void **) &rvalue, &rlvalue);
     CuAssertIntEquals(tc, ret, DB_OK);
     CuAssertIntEquals(tc, rlvalue, strlen(value));
     CuAssertTrue(tc, 0 == strcmp(rvalue, value));
 
-    ret = db_engine_remove(engine, key, strlen(key));
+    ret = dbEngineRemove(engine, key, strlen(key));
     CuAssertIntEquals(tc, ret, DB_OK);
 
     ret = db_engine_drop(engine);
